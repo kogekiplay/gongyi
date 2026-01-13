@@ -129,7 +129,21 @@ export default function App() {
               <CardTitle>关于</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-6 text-lg">作者：张奇</p>
+              <div className="mb-6 text-lg space-y-2">
+                <p>UI作者：张奇</p>
+                <p>后端作者：郭俊</p>
+                <p>
+                  项目地址：
+                  <a 
+                    href="https://github.com/kogeki/gongyi" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline block text-sm mt-1 truncate"
+                  >
+                    https://github.com/kogeki/gongyi
+                  </a>
+                </p>
+              </div>
               <Button onClick={() => setShowAbout(false)} className="w-full">
                 关闭
               </Button>
