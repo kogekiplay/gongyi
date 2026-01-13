@@ -23,11 +23,9 @@ jobs:
           node-version: '18'
 
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
+          targets: x86_64-pc-windows-msvc
 
       - name: Install Web front-end deps
         working-directory: apps/web
