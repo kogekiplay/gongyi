@@ -131,7 +131,8 @@ export default function App() {
             <CardContent>
               <div className="mb-6 text-lg space-y-2">
                 <p>UI作者：张奇</p>
-                <p>后端作者：郭俊</p>
+                <p>原计算逻辑：郭俊</p>
+                <p>使用语言：TypeScript+Tauri+Rust</p>
                 <p>
                   项目地址：
                   <a 
