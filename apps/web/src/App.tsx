@@ -186,14 +186,11 @@ export default function App() {
           )}
 
           {step === 'calc' && (
-            // Key forces re-mount when inputs change
             <Calculator 
-                key={Date.now()} 
                 standard={standard} 
                 mode={mode} 
                 onBack={() => setStep('mode')} 
                 onSaveHistory={saveHistory}
-                // @ts-ignore - I need to update Calculator to accept initialInputs
                 initialInputs={initialInputs}
             />
           )}
