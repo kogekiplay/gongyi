@@ -11,7 +11,7 @@
   "app": {
     "windows": [
       {
-        "title": "工艺单计算系统",
+        "title": "铜陵杨铜工艺计算器",
         "width": 1000,
         "height": 800,
         "minWidth": 800,
