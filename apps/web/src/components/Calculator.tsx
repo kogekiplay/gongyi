@@ -163,6 +163,7 @@ export function Calculator({ standard, mode, onBack, onSaveHistory, initialInput
                   step="0.01"
                   value={inputs[field] ?? ''}
                   onChange={(e) => handleInputChange(field, e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') doCalculate(); }}
                   placeholder="0.00"
                 />
               </div>

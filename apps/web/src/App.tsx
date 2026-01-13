@@ -3,7 +3,7 @@ import { StandardType, CalcMode, HistoryItem } from './types';
 import { Calculator } from './components/Calculator';
 import { History } from './components/History';
 import { Button, Card, CardHeader, CardTitle, CardContent } from './components/ui';
-import { Calculator as CalcIcon, Clock, Info } from 'lucide-react';
+import { Calculator as CalcIcon, Clock, Info, ArrowLeft } from 'lucide-react';
 
 export default function App() {
   const [step, setStep] = useState<'home' | 'standard' | 'mode' | 'calc'>('home');
@@ -49,6 +49,12 @@ export default function App() {
       setShowHistory(false);
   };
 
+  const deleteHistory = (timestamps: number[]) => {
+      const newHistory = history.filter(h => !timestamps.includes(h.timestamp));
+      setHistory(newHistory);
+      localStorage.setItem('gongyi_history', JSON.stringify(newHistory));
+  };
+
   const exportJSON = () => {
       const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -83,8 +89,8 @@ export default function App() {
       return (
           <div className="min-h-screen bg-slate-50 p-4 md:p-8">
               <div className="max-w-4xl mx-auto">
-                <Button variant="ghost" onClick={() => setShowHistory(false)} className="mb-4">
-                    Back
+                <Button variant="outline" onClick={() => setShowHistory(false)} className="mb-4 bg-white hover:bg-slate-100 gap-2 pl-2">
+                    <ArrowLeft size={16} /> 返回
                 </Button>
                 <Card>
                     <CardHeader><CardTitle>历史记录</CardTitle></CardHeader>
@@ -92,6 +98,7 @@ export default function App() {
                         <History 
                             history={history} 
                             onRestore={restoreAndNavigate} 
+                            onDelete={deleteHistory}
                             onClear={() => { setHistory([]); localStorage.removeItem('gongyi_history'); }}
                             onExportJSON={exportJSON}
                             onExportCSV={exportCSV}
