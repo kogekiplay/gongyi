@@ -3,7 +3,7 @@ import { StandardType, CalcMode, HistoryItem } from './types';
 import { Calculator } from './components/Calculator';
 import { History } from './components/History';
 import { Button, Card, CardHeader, CardTitle, CardContent } from './components/ui';
-import { Calculator as CalcIcon, Clock } from 'lucide-react';
+import { Calculator as CalcIcon, Clock, Info } from 'lucide-react';
 
 export default function App() {
   const [step, setStep] = useState<'home' | 'standard' | 'mode' | 'calc'>('home');
@@ -11,6 +11,7 @@ export default function App() {
   const [mode, setMode] = useState<CalcMode>('Single');
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
   // Load history from local storage
   useEffect(() => {
