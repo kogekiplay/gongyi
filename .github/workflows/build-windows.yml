@@ -44,4 +44,4 @@ jobs:
         with:
           name: tauri-windows-bundle
           path: |
-            apps/tauri-desktop/src-tauri/target/release/bundle/**
+            target/release/bundle/**
