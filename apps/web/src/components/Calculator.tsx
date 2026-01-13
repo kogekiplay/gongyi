@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { StandardType, CalcMode, ParamType, CalcInput, CalcResult, FullCalcOutput } from '../types';
+import { useState, useEffect } from 'react';
+import { StandardType, CalcMode, ParamType, CalcInput, FullCalcOutput } from '../types';
 import { calculate } from '../lib/api';
 import { Button, Input, Label, Card, CardHeader, CardTitle, CardContent } from './ui';
-import { ArrowLeft, Calculator as CalcIcon, Copy, History as HistoryIcon, Download } from 'lucide-react';
+import { ArrowLeft, Calculator as CalcIcon, Copy } from 'lucide-react';
 
 const PARAMS: { id: ParamType; label: string }[] = [
   { id: 'AFilm', label: 'a边漆膜厚度' },

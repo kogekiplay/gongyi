@@ -1,6 +1,5 @@
-import React from 'react';
 import { HistoryItem } from '../types';
-import { Button, Card, CardHeader, CardTitle, CardContent } from './ui';
+import { Button, Card, CardContent } from './ui';
 import { RotateCcw } from 'lucide-react';
 
 interface HistoryProps {

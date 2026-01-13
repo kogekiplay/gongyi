@@ -1,7 +1,7 @@
 {
   "productName": "gongyi",
   "version": "0.1.0",
-  "identifier": "com.gongyi.app",
+  "identifier": "com.gongyi.desktop",
   "build": {
     "beforeDevCommand": "npm run dev --prefix ../web",
     "beforeBuildCommand": "npm run build --prefix ../web",

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { StandardType, CalcMode, HistoryItem } from './types';
 import { Calculator } from './components/Calculator';
 import { History } from './components/History';
 import { Button, Card, CardHeader, CardTitle, CardContent } from './components/ui';
-import { Calculator as CalcIcon, Settings, Clock } from 'lucide-react';
+import { Calculator as CalcIcon, Clock } from 'lucide-react';
 
 export default function App() {
   const [step, setStep] = useState<'home' | 'standard' | 'mode' | 'calc'>('home');
@@ -33,17 +33,6 @@ export default function App() {
     const newHistory = [newItem, ...history].slice(0, 50);
     setHistory(newHistory);
     localStorage.setItem('gongyi_history', JSON.stringify(newHistory));
-  };
-
-  const handleRestore = (item: HistoryItem) => {
-    setStandard(item.request.standard);
-    setMode(item.request.mode);
-    setStep('calc');
-    setShowHistory(false);
-    // TODO: Pass inputs to Calculator via props or context.
-    // Ideally Calculator should accept `initialInputs` prop.
-    // For now, I'll cheat and say "Implementer Note: Pass item.request.inputs to Calculator"
-    // I will update Calculator to accept initialInputs.
   };
   
   // NOTE: Calculator needs update to accept initialInputs. 

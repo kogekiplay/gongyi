@@ -1,4 +1,4 @@
-import { CalcInput, CalcOutput, CalcResult, FullCalcOutput, ParamType, CalcRequest } from '../types';
+import { FullCalcOutput, CalcRequest, CalcResult } from '../types';
 
 function roundTo(num: number, decimals: number): number {
   const factor = Math.pow(10, decimals);
