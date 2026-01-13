@@ -106,18 +106,39 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
       <header className="bg-blue-900 text-white p-4 shadow-md">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-                <CalcIcon />
-                <h1 className="text-xl font-bold">工艺单计算系统</h1>
-            </div>
-            <Button variant="ghost" className="text-white hover:bg-blue-800" onClick={() => setShowHistory(true)}>
-                <Clock className="mr-2 h-4 w-4" /> 历史记录
+          <div className="flex items-center space-x-2">
+            <CalcIcon />
+            <h1 className="text-xl font-bold">铜陵杨铜工艺计算器</h1>
+          </div>
+          <div className="flex space-x-2">
+            <Button variant="ghost" className="text-white hover:bg-blue-800" onClick={() => setShowAbout(true)}>
+              <Info className="mr-2 h-4 w-4" /> 关于
             </Button>
+            <Button variant="ghost" className="text-white hover:bg-blue-800" onClick={() => setShowHistory(true)}>
+              <Clock className="mr-2 h-4 w-4" /> 历史记录
+            </Button>
+          </div>
         </div>
       </header>
 
+      {showAbout && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="w-80 relative shadow-lg">
+            <CardHeader>
+              <CardTitle>关于</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-6 text-lg">作者：张奇</p>
+              <Button onClick={() => setShowAbout(false)} className="w-full">
+                关闭
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <main className="flex-1 p-4 md:p-8 overflow-auto">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           {step === 'home' && (
              <div className="flex flex-col items-center justify-center space-y-8 py-20 animate-in zoom-in duration-300">
                 <h2 className="text-3xl font-bold text-slate-800">欢迎使用工艺计算器</h2>
