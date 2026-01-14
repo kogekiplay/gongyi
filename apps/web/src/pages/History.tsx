@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { historyStorage } from '../features/history/storage';
 import { HistoryItem } from '../features/calc/types';
 import { Button, Input, Checkbox, Card, CardContent, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../components/ui';
-import { Search, Trash2, FileJson, FileSpreadsheet, ArrowUpRight, MoreHorizontal, Eye, Copy, RotateCcw, Download, Calendar } from 'lucide-react';
+import { Search, Trash2, FileJson, FileSpreadsheet, Eye, RotateCcw, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HistoryDetailDialog } from '../features/history/HistoryDetailDialog';
 import { generateSummary } from '../features/history/summary';
-import { exportHistory, getExportData } from '../features/history/export';
+import { exportHistory } from '../features/history/export';
 import { getStandardLabel, getModeLabel } from '../features/history/labels';
 
 export function HistoryPage() {

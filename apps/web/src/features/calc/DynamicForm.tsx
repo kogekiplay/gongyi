@@ -41,7 +41,7 @@ export function DynamicForm({ mode, param, onSubmit, defaultValues, updates, cla
     mode: 'onSubmit', // Validate on submit first
   });
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue, clearErrors, getValues } = form;
+  const { register, handleSubmit, formState: { errors }, reset, setValue, clearErrors } = form;
 
   // Determine which fields to show
   const visibleFields = mode === 'Single' && param 
