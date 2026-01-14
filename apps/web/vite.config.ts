@@ -13,6 +13,20 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            'framer-motion',
+            'lucide-react'
+          ]
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
   },
   server: {
     port: 1420,
