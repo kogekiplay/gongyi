@@ -1,0 +1,26 @@
+:root {
+  --bg0: #F3F5F7;
+  --bg1: #EEF2F6;
+  --card: rgba(255, 255, 255, 0.78);
+  --cardSolid: #FFFFFF;
+  --border: rgba(15, 23, 42, 0.08);
+  --muted: rgba(15, 23, 42, 0.55);
+  --text: rgba(15, 23, 42, 0.92);
+  --primary: #1F3B67;
+  --primary2: #2563EB;
+  
+  --radius: 18px;
+  
+  --shadowCard: 0 1px 2px rgba(0, 0, 0, 0.06), 0 14px 34px rgba(0, 0, 0, 0.10);
+  --shadowSm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.dark {
+  --bg0: #0f172a;
+  --bg1: #1e293b;
+  --card: rgba(30, 41, 59, 0.78);
+  --cardSolid: #1e293b;
+  --border: rgba(255, 255, 255, 0.08);
+  --muted: rgba(255, 255, 255, 0.55);
+  --text: rgba(255, 255, 255, 0.92);
+}
