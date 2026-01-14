@@ -6,9 +6,15 @@
 @layer base {
   body {
     @apply font-sans text-[var(--text)] antialiased;
+    /* Default Web background: Gradient */
     background: linear-gradient(to bottom right, var(--bg0), var(--bg1));
     background-attachment: fixed;
     min-height: 100vh;
+  }
+  
+  /* Tauri mode: Transparent background to show Mica/Vibrancy */
+  body.tauri {
+    background: transparent;
   }
 }
 

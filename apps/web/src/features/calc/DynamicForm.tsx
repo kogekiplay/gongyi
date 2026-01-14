@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { calcFormSchema, CalcFormValues, FIELD_LABELS } from './schema';
+import { createCalcSchema, CalcFormValues, FIELD_LABELS } from './schema';
 import { Button, Input, Label } from '../../components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui';
 import { CalcMode, ParamType } from './types';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { RotateCcw } from 'lucide-react';
 
 interface DynamicFormProps {
@@ -33,17 +33,29 @@ const FULL_FIELDS: (keyof CalcFormValues)[] = [
 ];
 
 export function DynamicForm({ mode, param, onSubmit, defaultValues, updates, className, isSubmitting }: DynamicFormProps) {
+  const schema = useMemo(() => createCalcSchema(mode, param), [mode, param]);
+
   const form = useForm<CalcFormValues>({
-    resolver: zodResolver(calcFormSchema) as any,
+    resolver: zodResolver(schema) as any,
     defaultValues: defaultValues || { n: 1 },
+    mode: 'onSubmit', // Validate on submit first
   });
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = form;
+  const { register, handleSubmit, formState: { errors }, reset, setValue, clearErrors, getValues } = form;
 
   // Determine which fields to show
   const visibleFields = mode === 'Single' && param 
     ? REQUIRED_FIELDS[param] 
     : FULL_FIELDS;
+
+  // Clear errors when param changes to avoid sticky errors from previous param
+  useEffect(() => {
+    clearErrors();
+    // We also re-register fields, but values persist.
+    // If we want to clean up values that are not relevant, we could do it here,
+    // but users might prefer keeping 'n' and 'paper_h'.
+    // However, we MUST ensure validation state is reset.
+  }, [mode, param, clearErrors]);
 
   // Reset form when defaultValues change (e.g. history restore)
   useEffect(() => {
@@ -51,6 +63,7 @@ export function DynamicForm({ mode, param, onSubmit, defaultValues, updates, cla
       reset(defaultValues);
     }
   }, [defaultValues, reset]);
+
 
   // Handle updates from PresetCard
   useEffect(() => {
@@ -85,8 +98,8 @@ export function DynamicForm({ mode, param, onSubmit, defaultValues, updates, cla
                   className={errors[field] ? "border-red-500 focus-visible:ring-red-500" : ""}
                   {...register(field, { valueAsNumber: true })}
                 />
-                {errors[field] && (
-                  <span className="text-xs text-red-500">{errors[field]?.message}</span>
+                {errors[field]?.message && (
+                  <span className="text-xs text-red-500">{errors[field]?.message as string}</span>
                 )}
               </div>
             ))}

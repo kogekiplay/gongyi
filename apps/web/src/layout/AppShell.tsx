@@ -6,7 +6,7 @@ import { AppProvider } from '../app/context';
 export function AppShell() {
   return (
     <AppProvider>
-      <div className="flex min-h-screen bg-[var(--bg0)]">
+      <div className="flex min-h-screen bg-transparent">
         <Sidebar />
         <main className="flex-1 ml-[260px] flex flex-col">
           <Topbar />

@@ -2,16 +2,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { historyStorage } from '../features/history/storage';
 import { HistoryItem } from '../features/calc/types';
-import { Button, Input, Checkbox, Card, CardContent, CardHeader, CardTitle } from '../components/ui';
-import { Search, Trash2, FileJson, FileSpreadsheet, ArrowUpRight } from 'lucide-react';
+import { Button, Input, Checkbox, Card, CardContent, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../components/ui';
+import { Search, Trash2, FileJson, FileSpreadsheet, ArrowUpRight, MoreHorizontal, Eye, Copy, RotateCcw, Download, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { HistoryDetailDialog } from '../features/history/HistoryDetailDialog';
+import { generateSummary } from '../features/history/summary';
+import { exportHistory, getExportData } from '../features/history/export';
+import { getStandardLabel, getModeLabel } from '../features/history/labels';
 
 export function HistoryPage() {
   const navigate = useNavigate();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [detailItem, setDetailItem] = useState<HistoryItem | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   useEffect(() => {
     historyStorage.init().then(history => setHistory(history));
@@ -21,10 +27,17 @@ export function HistoryPage() {
     return history.filter(item => {
       if (!searchTerm) return true;
       const term = searchTerm.toLowerCase();
-      // Search in ID, formatted date, or input values
-      const dateStr = format(item.timestamp, 'yyyy-MM-dd HH:mm');
-      const inputsStr = JSON.stringify(item.request.inputs);
-      return dateStr.includes(term) || inputsStr.includes(term) || item.request.param?.toLowerCase().includes(term);
+      const summary = generateSummary(item);
+      
+      const dateStr = format(item.timestamp, 'yyyy-MM-dd HH:mm:ss');
+      const standardStr = getStandardLabel(item.request.standard);
+      const modeStr = getModeLabel(item.request.mode);
+      
+      return dateStr.includes(term) || 
+             summary.title.includes(term) || 
+             summary.resultSummary.includes(term) ||
+             standardStr.includes(term) ||
+             modeStr.includes(term);
     });
   }, [history, searchTerm]);
 
@@ -36,47 +49,16 @@ export function HistoryPage() {
     }
   };
 
+  const handleSingleDelete = (id: string) => {
+    handleDelete([id]);
+  };
+
   const handleExport = (type: 'json' | 'csv') => {
     const dataToExport = selectedIds.length > 0 
       ? history.filter(h => selectedIds.includes(h.id))
       : history;
 
-    if (dataToExport.length === 0) return;
-
-    let content = '';
-    let mimeType = '';
-    let ext = '';
-
-    if (type === 'json') {
-      content = JSON.stringify(dataToExport, null, 2);
-      mimeType = 'application/json';
-      ext = 'json';
-    } else {
-      // CSV Flattening
-      const headers = ['ID', 'Time', 'Standard', 'Mode', 'Param', 'Inputs', 'Result'];
-      const rows = dataToExport.map(item => [
-        item.id,
-        format(item.timestamp, 'yyyy-MM-dd HH:mm:ss'),
-        item.request.standard,
-        item.request.mode,
-        item.request.param || 'FULL',
-        JSON.stringify(item.request.inputs).replace(/"/g, '""'), // Escape quotes
-        item.result.results?.map(r => `${r.label}:${r.value}${r.unit}`).join('; ') || 'Error'
-      ]);
-      content = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
-      mimeType = 'text/csv;charset=utf-8;';
-      ext = 'csv';
-    }
-
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `gongyi_history_${format(new Date(), 'yyyyMMddHHmm')}.${ext}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    exportHistory(dataToExport, type);
   };
 
   const handleRestore = (item: HistoryItem) => {
@@ -101,104 +83,175 @@ export function HistoryPage() {
     );
   };
 
+  const openDetail = (item: HistoryItem) => {
+    setDetailItem(item);
+    setDetailOpen(true);
+  };
+
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
-    >
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-4">
-          <CardTitle>历史记录 ({history.length})</CardTitle>
-          <div className="flex items-center space-x-2">
-             <div className="relative w-64">
+    <TooltipProvider>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6"
+      >
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle>历史记录 ({history.length})</CardTitle>
+            <div className="flex items-center space-x-2">
+              <div className="relative w-64">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-[var(--muted)]" />
                 <Input 
-                  placeholder="搜索时间、参数..." 
+                  placeholder="搜索时间、计算项、标准..." 
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   className="pl-8"
                 />
-             </div>
-             <Button variant="outline" size="icon" onClick={() => handleExport('json')} title="导出 JSON">
-                <FileJson size={16} />
-             </Button>
-             <Button variant="outline" size="icon" onClick={() => handleExport('csv')} title="导出 CSV">
-                <FileSpreadsheet size={16} />
-             </Button>
-             {selectedIds.length > 0 && (
-               <Button variant="destructive" size="icon" onClick={() => handleDelete(selectedIds)} title="删除选中">
-                 <Trash2 size={16} />
-               </Button>
-             )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border border-[var(--border)] overflow-hidden">
-            <div className="grid grid-cols-12 gap-4 p-4 bg-[var(--bg0)] text-sm font-medium text-[var(--muted)] border-b border-[var(--border)]">
-              <div className="col-span-1 flex items-center justify-center">
-                <Checkbox 
-                  checked={filteredHistory.length > 0 && selectedIds.length === filteredHistory.length}
-                  onChange={toggleSelectAll}
-                />
               </div>
-              <div className="col-span-3">时间</div>
-              <div className="col-span-2">类型</div>
-              <div className="col-span-4">结果概要</div>
-              <div className="col-span-2 text-right">操作</div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    导出
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleExport('json')}>
+                    <FileJson className="mr-2 h-4 w-4" />
+                    导出 JSON
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>
+                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                    导出 CSV
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {selectedIds.length > 0 && (
+                <Button variant="destructive" size="icon" onClick={() => handleDelete(selectedIds)} title="删除选中">
+                  <Trash2 size={16} />
+                </Button>
+              )}
             </div>
-            
-            <div className="max-h-[600px] overflow-y-auto">
-              <AnimatePresence initial={false}>
-                {filteredHistory.length === 0 ? (
-                  <div className="p-8 text-center text-[var(--muted)]">无记录</div>
-                ) : (
-                  filteredHistory.map(item => (
-                    <motion.div 
-                      key={item.id}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="grid grid-cols-12 gap-4 p-4 items-center border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg0)] transition-colors"
-                    >
-                      <div className="col-span-1 flex items-center justify-center">
-                        <Checkbox 
-                          checked={selectedIds.includes(item.id)}
-                          onChange={() => toggleSelect(item.id)}
-                        />
-                      </div>
-                      <div className="col-span-3 text-sm">
-                        {format(item.timestamp, 'yyyy-MM-dd HH:mm:ss')}
-                      </div>
-                      <div className="col-span-2 text-sm">
-                        <span className="px-2 py-1 rounded bg-white border border-[var(--border)] text-xs">
-                          {item.request.mode === 'Single' ? '单参数' : '全参数'}
-                        </span>
-                        {item.request.param && (
-                           <span className="ml-2 px-2 py-1 rounded bg-blue-50 text-blue-600 border border-blue-100 text-xs">
-                             {item.request.param}
-                           </span>
-                        )}
-                      </div>
-                      <div className="col-span-4 text-sm truncate text-[var(--muted)]">
-                        {item.result.results?.map(r => `${r.label}: ${r.value}`).join(', ')}
-                      </div>
-                      <div className="col-span-2 flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleRestore(item)} title="回填">
-                           <ArrowUpRight size={16} />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete([item.id])} className="text-red-500 hover:text-red-600">
-                           <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border border-[var(--border)] overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px] text-center">
+                      <Checkbox 
+                        checked={filteredHistory.length > 0 && selectedIds.length === filteredHistory.length}
+                        onChange={toggleSelectAll}
+                      />
+                    </TableHead>
+                    <TableHead className="w-[180px]">时间</TableHead>
+                    <TableHead className="w-[100px]">标准</TableHead>
+                    <TableHead className="w-[100px]">模式</TableHead>
+                    <TableHead className="w-[200px]">计算项</TableHead>
+                    <TableHead>结果概要</TableHead>
+                    <TableHead className="w-[120px] text-right">操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <AnimatePresence initial={false}>
+                    {filteredHistory.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center text-[var(--muted)]">
+                          无记录
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredHistory.map(item => {
+                        const summary = generateSummary(item);
+                        return (
+                          <TableRow 
+                            key={item.id}
+                            className="cursor-pointer hover:bg-[var(--bg0)] transition-colors"
+                            onClick={(e) => {
+                              // Prevent opening detail when clicking checkbox or actions
+                              if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) return;
+                              openDetail(item);
+                            }}
+                          >
+                            <TableCell className="text-center">
+                              <Checkbox 
+                                checked={selectedIds.includes(item.id)}
+                                onChange={() => toggleSelect(item.id)}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{format(item.timestamp, 'HH:mm:ss')}</span>
+                                <span className="text-xs text-[var(--muted)]">{format(item.timestamp, 'yyyy-MM-dd')}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-200">
+                                {getStandardLabel(item.request.standard)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">
+                                {getModeLabel(item.request.mode)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-medium text-[var(--text)]">
+                              {summary.title}
+                            </TableCell>
+                            <TableCell className="text-[var(--muted)]">
+                              <span className="line-clamp-1" title={summary.resultSummary}>
+                                {summary.resultSummary}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={() => openDetail(item)} className="h-8 w-8">
+                                      <Eye size={16} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>查看详情</TooltipContent>
+                                </Tooltip>
+                                
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={() => handleRestore(item)} className="h-8 w-8 text-blue-500 hover:text-blue-600">
+                                      <RotateCcw size={16} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>回填表单</TooltipContent>
+                                </Tooltip>
+                                
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={() => handleDelete([item.id])} className="h-8 w-8 text-red-500 hover:text-red-600">
+                                      <Trash2 size={16} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>删除</TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </AnimatePresence>
+                </TableBody>
+              </Table>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+          </CardContent>
+        </Card>
+
+        <HistoryDetailDialog 
+          item={detailItem} 
+          open={detailOpen} 
+          onOpenChange={setDetailOpen}
+          onRestore={handleRestore}
+          onDelete={handleSingleDelete}
+        />
+      </motion.div>
+    </TooltipProvider>
   );
 }
